@@ -1,44 +1,69 @@
 using MyClasses;
+
 namespace MyClassesTest;
+
 [TestClass]
-public class FileProcessTest
+public class FileProcessTest : TestBase
 {
     [TestMethod]
     public void FileNameDoesExist()
     {
         // Arrange
         FileProcess fp = new();
-        string fileName = @"C:\Windows\Regedit.exe";
         bool fromCall;
+
+        // Add Messages to Test Output
+        string fileName = GetTestSetting<string>("GoodFileName", TestConstants.GOOD_FILE_NAME);
+        fileName = fileName.Replace("[AppDataPath]",
+            Environment.GetFolderPath(
+                Environment.SpecialFolder.ApplicationData));
+        TestContext?.WriteLine($"Checking for file: '{fileName}'");
+
+        // Create the Good File
+        File.AppendAllText(fileName, "Some Text");
 
         // Act
         fromCall = fp.FileExists(fileName);
 
-        // Assert Assert.IsTrue(fromCall);
-    }
+        // Delete the Good File if it Exists
+        if (File.Exists(fileName))
+        {
+            File.Delete(fileName);
+        }
 
+        // Assert
+        Assert.IsTrue(fromCall);
+    }
 
     [TestMethod]
     public void FileNameDoesNotExist()
     {
         // Arrange
         FileProcess fp = new();
-        string fileName = @"C:\DoesNotExist.txt";
         bool fromCall;
+
+        // Add Messages to Test Output
+        string fileName = GetTestSetting<string>("BadFileName", TestConstants.BAD_FILE_NAME);
+        TestContext?.WriteLine($"Checking file '{fileName}' does NOT exist.");
 
         // Act
         fromCall = fp.FileExists(fileName);
 
-        // Assert Assert.IsFalse(fromCall);
+        // Assert
+        Assert.IsFalse(fromCall);
     }
-
 
     [TestMethod]
     public void FileNameNullOrEmpty_UsingTryCatch_ShouldThrowArgumentNullException()
     {
         // Arrange
         FileProcess fp;
-        string fileName = string.Empty; bool fromCall = false;
+        string fileName = string.Empty;
+        bool fromCall = false;
+
+        // Add Messages to Test Output
+        OutputMessage = GetTestSetting<string>("EmptyFileMsg", TestConstants.EMPTY_FILE_MSG);
+        TestContext?.WriteLine(OutputMessage);
 
         try
         {
@@ -47,14 +72,16 @@ public class FileProcessTest
 
             fromCall = fp.FileExists(fileName);
 
-            // Assert: Fail as we should not get here Assert.Fail("The Call to the FileExists() method did NOT throw an ArgumentNullException and it SHOULD have.");
+            // Assert: Fail because we should not get here
+            OutputMessage = GetTestSetting<string>("EmptyFileFailMsg", TestConstants.EMPTY_FILE_FAIL_MSG);
+            Assert.Fail(OutputMessage);
         }
         catch (ArgumentNullException)
         {
-            // Assert: Test was a success Assert.IsFalse(fromCall);
+            // Assert: Test was a success
+            Assert.IsFalse(fromCall);
         }
     }
-
 
     [TestMethod]
     [ExpectedException(typeof(ArgumentNullException))]
@@ -62,12 +89,19 @@ public class FileProcessTest
     {
         // Arrange
         FileProcess fp = new();
-        string fileName = string.Empty; bool fromCall;
+        string fileName = string.Empty;
+        //string fileName = "Test";  // Uncomment to test failure
+        bool fromCall;
+
+        // Add Messages to Test Output
+        OutputMessage = GetTestSetting<string>("EmptyFileMsg", TestConstants.EMPTY_FILE_MSG);
+        TestContext?.WriteLine(OutputMessage);
 
         // Act
         fromCall = fp.FileExists(fileName);
 
-        // Assert: Fail as we should not get here Assert.Fail("The Call to the FileExists() method did NOT throw an ArgumentNullException and it SHOULD have.");
-}
-
+        // Assert: Fail because we should not get here
+        OutputMessage = GetTestSetting<string>("EmptyFileFailMsg", TestConstants.EMPTY_FILE_FAIL_MSG);
+        Assert.Fail(OutputMessage);
+    }
 }

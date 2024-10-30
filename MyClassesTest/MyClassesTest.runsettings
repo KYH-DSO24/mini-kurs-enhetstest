@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<RunSettings>
+	<!-- Configurations that affect the Test Framework -->
+	<RunConfiguration>
+		<!-- Path relative to directory that contains .runsettings file-->
+		<ResultsDirectory>.\TestResults</ResultsDirectory>
+	</RunConfiguration>
+
+	<!-- Parameters for tests at runtime -->
+	<TestRunParameters>
+		<Parameter name="GoodFileName" value="[AppDataPath]\TestFile.txt" />
+		<Parameter name="BadFileName" value="C:\NotExists.txt" />
+		<Parameter name="EmptyFileFailMsg" value="The Call to the FileExists() method did NOT throw an ArgumentNullException and it SHOULD have." />
+		<Parameter name="EmptyFileMsg" value="Checking for an empty file name." />
+	</TestRunParameters>
+	<!-- Configure log settings -->
+	<LoggerRunSettings>
+		<Loggers>
+			<Logger friendlyName="console" enabled="True">
+				<Configuration>
+					<Verbosity>quiet</Verbosity>
+				</Configuration>
+			</Logger>
+			<Logger friendlyName="trx" enabled="True">
+				<Configuration>
+					<LogFileName>MyClasses.trx</LogFileName>
+				</Configuration>
+			</Logger>
+			<Logger friendlyName="html" enabled="True">
+				<Configuration>
+					<LogFileName>MyClasses.html</LogFileName>
+				</Configuration>
+			</Logger>
+		</Loggers>
+	</LoggerRunSettings>
+
+</RunSettings>
