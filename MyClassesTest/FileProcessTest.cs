@@ -27,9 +27,11 @@ public class FileProcessTest : TestBase
     {
         TestContext?.WriteLine("In FileProcessTest.TestInitialize() method");
 
+        WriteDescription(this.GetType());
+        WriteOwner(this.GetType());
+
         // Check to see which test we are running
-        string testName = GetTestName();
-        if (testName == "FileNameDoesExist")
+        if (GetTestName() == "FileNameDoesExist")
         {
             // Get Good File Name
             string fileName = GetFileName("GoodFileName", TestConstants.GOOD_FILE_NAME);
@@ -42,11 +44,8 @@ public class FileProcessTest : TestBase
     [TestCleanup()]
     public void TestCleanup()
     {
-        TestContext?.WriteLine("In FileProcessTest.TestCleanup() method");
-
         // Check to see which test we are running
-        string testName = GetTestName();
-        if (testName == "FileNameDoesExist")
+        if (GetTestName() == "FileNameDoesExist")
         {
             // Get Good File Name
             string fileName = GetFileName("GoodFileName", TestConstants.GOOD_FILE_NAME);
@@ -61,32 +60,104 @@ public class FileProcessTest : TestBase
     #endregion
 
     [TestMethod]
-    public void FileNameDoesExist()
+    [DeploymentItem("FileToDeploy.txt")]
+    [Description("Check to see if a file exists using the [DeploymentItem] attribute.")]
+    public void FileNameDoesExistUsingDeploymentItem()
     {
         // Arrange
         FileProcess fp = new();
+        string fileName = "FileToDeploy.txt";
         bool fromCall;
 
         // Add Messages to Test Output
-        string fileName = GetFileName("GoodFileName", TestConstants.GOOD_FILE_NAME);
-        TestContext?.WriteLine($"Checking for file: '{fileName}'");
+        TestContext?.WriteLine($@"Checking for file: '{fileName}'
+       in folder '{TestContext?.DeploymentDirectory}'");
 
         // Act
         fromCall = fp.FileExists(fileName);
 
         // Assert
-        Assert.IsTrue(fromCall, "File '{0}' does NOT exist", fileName);
+        Assert.IsTrue(fromCall,
+          "File '{0}' does NOT exist.", fileName);
     }
 
     [TestMethod]
-    public void FileNameDoesNotExist()
+    [DeploymentItem("FileDataRow.txt")]
+    [DeploymentItem("FileDataRow2.txt")]
+    [DataRow("FileDataRow.txt")]
+    [DataRow("FileDataRow2.txt")]
+    [Description("Check to see if a file exists using the [DataRow] attribute.")]
+    public void FileNameDoesExistUsingDataRow(string fileName)
     {
         // Arrange
         FileProcess fp = new();
         bool fromCall;
 
         // Add Messages to Test Output
+        TestContext?.WriteLine($@"Checking for file: '{fileName}'
+       in folder '{TestContext?.DeploymentDirectory}'");
+
+        // Act
+        fromCall = fp.FileExists(fileName);
+
+        // Assert
+        Assert.IsTrue(fromCall,
+          "File '{0}' does NOT exist.", fileName);
+    }
+
+    [TestMethod]
+    [DeploymentItem("FileDynamic.txt")]
+    [DeploymentItem("FileDynamic2.txt")]
+    [DynamicData("FileNames", typeof(TestData), DynamicDataSourceType.Method)]
+    [Description("Check to see if a file exists using the [DynamicData] attribute.")]
+    public void FileNameDoesExistUsingDynamicData(string fileName)
+    {
+        // Arrange
+        FileProcess fp = new();
+        bool fromCall;
+
+        // Add Messages to Test Output
+        TestContext?.WriteLine($@"Checking for file: '{fileName}'
+       in folder '{TestContext?.DeploymentDirectory}'");
+
+        // Act
+        fromCall = fp.FileExists(fileName);
+
+        // Assert
+        Assert.IsTrue(fromCall,
+          "File '{0}' does NOT exist.", fileName);
+    }
+
+    [TestMethod]
+    [Description("Check to see if a file exists.")]
+    public void FileNameDoesExist()
+    {
+        // Arrange
+        FileProcess fp = new();
+        string fileName = GetFileName("GoodFileName", TestConstants.GOOD_FILE_NAME);
+        bool fromCall;
+
+        // Add Messages to Test Output
+        TestContext?.WriteLine($"Checking for File: '{fileName}'");
+
+        // Act
+        fromCall = fp.FileExists(fileName);
+
+        // Assert
+        Assert.IsTrue(fromCall,
+          "File '{0}' does NOT exist.", fileName);
+    }
+
+    [TestMethod]
+    [Description("Check to see if file does not exist.")]
+    public void FileNameDoesNotExist()
+    {
+        // Arrange
+        FileProcess fp = new();
         string fileName = GetTestSetting<string>("BadFileName", TestConstants.BAD_FILE_NAME);
+        bool fromCall;
+
+        // Add Messages to Test Output
         TestContext?.WriteLine($"Checking file '{fileName}' does NOT exist.");
 
         // Act
@@ -97,6 +168,7 @@ public class FileProcessTest : TestBase
     }
 
     [TestMethod]
+    [Description("Check for a thrown ArgumentNullException using try...catch.")]
     public void FileNameNullOrEmpty_UsingTryCatch_ShouldThrowArgumentNullException()
     {
         // Arrange
@@ -104,18 +176,18 @@ public class FileProcessTest : TestBase
         string fileName = string.Empty;
         bool fromCall = false;
 
-        // Add Messages to Test Output
-        OutputMessage = GetTestSetting<string>("EmptyFileMsg", TestConstants.EMPTY_FILE_MSG);
-        TestContext?.WriteLine(OutputMessage);
-
         try
         {
             // Act
             fp = new();
 
+            // Add Messages to Test Output
+            OutputMessage = GetTestSetting<string>("EmptyFileMsg", TestConstants.EMPTY_FILE_MSG);
+            TestContext?.WriteLine(OutputMessage);
+
             fromCall = fp.FileExists(fileName);
 
-            // Assert: Fail because we should not get here
+            // Assert: Fail as we should not get here
             OutputMessage = GetTestSetting<string>("EmptyFileFailMsg", TestConstants.EMPTY_FILE_FAIL_MSG);
             Assert.Fail(OutputMessage);
         }
@@ -127,13 +199,13 @@ public class FileProcessTest : TestBase
     }
 
     [TestMethod]
+    [Description("Check for a thrown ArgumentNullException using ExpectedException.")]
     [ExpectedException(typeof(ArgumentNullException))]
     public void FileNameNullOrEmpty_UsingExpectedExceptionAttribute()
     {
         // Arrange
         FileProcess fp = new();
         string fileName = string.Empty;
-        //string fileName = "Test";  // Uncomment to test failure
         bool fromCall;
 
         // Add Messages to Test Output
@@ -143,7 +215,7 @@ public class FileProcessTest : TestBase
         // Act
         fromCall = fp.FileExists(fileName);
 
-        // Assert: Fail because we should not get here
+        // Assert: Fail as we should not get here
         OutputMessage = GetTestSetting<string>("EmptyFileFailMsg", TestConstants.EMPTY_FILE_FAIL_MSG);
         Assert.Fail(OutputMessage);
     }
